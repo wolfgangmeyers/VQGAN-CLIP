@@ -985,6 +985,9 @@ def run(args):
             p.stdin.close()
             p.wait()
 
+def default_args():
+    return vq_parser.parse_args()
+
 if __name__ == '__main__':
     # Execute the parse_args() method
     args = vq_parser.parse_args()
