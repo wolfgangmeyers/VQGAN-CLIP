@@ -9,6 +9,7 @@ from urllib.request import urlopen
 from tqdm import tqdm
 import sys
 import os
+from types import SimpleNamespace
 
 # pip install taming-transformers doesn't work with Gumbel, but does not yet work with coco etc
 # appending the path does work with Gumbel, but gives ModuleNotFoundError: No module named 'transformers' for coco etc
@@ -92,6 +93,43 @@ vq_parser.add_argument("-aug",  "--augments", nargs='+', action='append', type=s
 vq_parser.add_argument("-vsd",  "--video_style_dir", type=str, help="Directory with video frames to style", default=None, dest='video_style_dir')
 vq_parser.add_argument("-cd",   "--cuda_device", type=str, help="Cuda device to use", default="cuda:0", dest='cuda_device')
 
+_default_args = SimpleNamespace(
+    prompts=None,
+    image_prompts=[],
+    iterations=500,
+    save_every=50,
+    size=[default_image_size,default_image_size],
+    init_image=None,
+    init_noise=None,
+    init_weight=0.,
+    clip_model='ViT-B/32',
+    vqgan_config=f'checkpoints/vqgan_imagenet_f16_16384.yaml',
+    vqgan_checkpoint=f'checkpoints/vqgan_imagenet_f16_16384.ckpt',
+    noise_prompt_seeds=[],
+    noise_prompt_weights=[],
+    step_size=0.1,
+    cut_method='latest',
+    cutn=32,
+    cut_pow=1.,
+    seed=None,
+    optimiser='Adam',
+    output='output.png',
+    make_video=False,
+    make_zoom_video=False,
+    zoom_start=0,
+    zoom_frequency=10,
+    zoom_scale=0.99,
+    zoom_shift_x=0,
+    zoom_shift_y=0,
+    prompt_frequency=0,
+    video_length=10,
+    output_video_fps=0,
+    input_video_fps=15,
+    cudnn_determinism=False,
+    augments=[],
+    video_style_dir=None,
+    cuda_device='cuda:0'
+)
 
 # Various functions and classes
 def sinc(x):
@@ -986,7 +1024,7 @@ def run(args):
             p.wait()
 
 def default_args():
-    return vq_parser.parse_args()
+    return _default_args
 
 if __name__ == '__main__':
     # Execute the parse_args() method
