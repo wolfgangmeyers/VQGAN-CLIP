@@ -96,8 +96,8 @@ vq_parser.add_argument("-cd",   "--cuda_device", type=str, help="Cuda device to 
 _default_args = SimpleNamespace(
     prompts=None,
     image_prompts=[],
-    iterations=500,
-    save_every=50,
+    max_iterations=500,
+    display_freq=50,
     size=[default_image_size,default_image_size],
     init_image=None,
     init_noise=None,
