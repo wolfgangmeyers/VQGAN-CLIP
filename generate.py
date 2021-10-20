@@ -778,6 +778,8 @@ def run(args):
         
         if i % args.display_freq == 0:
             checkin(i, lossAll)
+            if hasattr(args, "on_save_callback") and callable(args.on_save_callback):
+                args.on_save_callback(i)
         
         loss = sum(lossAll)
         loss.backward()
