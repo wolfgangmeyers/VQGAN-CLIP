@@ -977,7 +977,7 @@ def run(args):
             # Hardware encoding and video frame interpolation
             print("Creating interpolated frames...")
             ffmpeg_filter = f"minterpolate='mi_mode=mci:me=hexbs:me_mode=bidir:mc_mode=aobmc:vsbmc=1:mb_size=8:search_param=32:fps={args.output_video_fps}'"
-            output_file = re.compile('\.png$').sub('.mp4', args.output)
+            output_file = re.compile('\.(png|jpg)$').sub('.mp4', args.output)
             try:
                 p = Popen(['ffmpeg',
                         '-y',
