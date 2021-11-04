@@ -767,7 +767,7 @@ def run(args):
         if args.make_video:    
             img = np.array(out.mul(255).clamp(0, 255)[0].cpu().detach().numpy().astype(np.uint8))[:,:,:]
             img = np.transpose(img, (1, 2, 0))
-            imageio.imwrite('./steps/' + str(i) + '.png', np.array(img))
+            imageio.imwrite('./steps/' + str(i).zfill(4) + '.png', np.array(img))
 
         return result # return loss
 
@@ -952,78 +952,19 @@ def run(args):
 
     # Video generation
     if args.make_video or args.make_zoom_video:
-        init_frame = 1      # Initial video frame
-        if args.make_zoom_video:
-            last_frame = j
-        else:
-            last_frame = i  # This will raise an error if that number of frames does not exist.
-
-        length = args.video_length # Desired time of the video in seconds
-
-        min_fps = 10
-        max_fps = 60
-
-        total_frames = last_frame-init_frame
-
-        frames = []
-        tqdm.write('Generating video...')
-        for i in range(init_frame,last_frame):
-            temp = Image.open("./steps/"+ str(i) +'.png')
-            keep = temp.copy()
-            frames.append(keep)
-            temp.close()
-        
-        if args.output_video_fps > 9:
-            # Hardware encoding and video frame interpolation
-            print("Creating interpolated frames...")
-            ffmpeg_filter = f"minterpolate='mi_mode=mci:me=hexbs:me_mode=bidir:mc_mode=aobmc:vsbmc=1:mb_size=8:search_param=32:fps={args.output_video_fps}'"
-            output_file = re.compile('\.(png|jpg)$').sub('.mp4', args.output)
-            try:
-                p = Popen(['ffmpeg',
-                        '-y',
-                        '-f', 'image2pipe',
-                        '-vcodec', 'png',
-                        '-r', str(args.input_video_fps),               
-                        '-i',
-                        '-',
-                        '-b:v', '10M',
-                        '-vcodec', 'h264_nvenc',
-                        '-pix_fmt', 'yuv420p',
-                        '-strict', '-2',
-                        '-filter:v', f'{ffmpeg_filter}',
-                        '-metadata', f'comment={args.prompts}',
-                    output_file], stdin=PIPE)
-            except FileNotFoundError:
-                print("ffmpeg command failed - check your installation")
-            for im in tqdm(frames):
-                im.save(p.stdin, 'PNG')
-            p.stdin.close()
-            p.wait()
-        else:
-            # CPU
-            fps = np.clip(total_frames/length,min_fps,max_fps)
-            output_file = re.compile('\.png$').sub('.mp4', args.output)
-            try:
-                p = Popen(['ffmpeg',
-                        '-y',
-                        '-f', 'image2pipe',
-                        '-vcodec', 'png',
-                        '-r', str(fps),
-                        '-i',
-                        '-',
-                        '-vcodec', 'libx264',
-                        '-r', str(fps),
-                        '-pix_fmt', 'yuv420p',
-                        '-crf', '17',
-                        '-preset', 'veryslow',
-                        '-metadata', f'comment={args.prompts}',
-                        output_file], stdin=PIPE)
-            except FileNotFoundError:
-                print("ffmpeg command failed - check your installation")        
-            for im in tqdm(frames):
-                im.save(p.stdin, 'PNG')
-            p.stdin.close()
-            p.wait()
+        # Hardware encoding and video frame interpolation
+        print("Creating interpolated frames...")
+        output_file = re.compile('\.(png|jpg)$').sub('.mp4', args.output)
+        try:
+            p = Popen(['ffmpeg',
+                    '-r', str(args.input_video_fps),               
+                    '-pix_fmt', 'yuv420p',
+                    '-strict', '-2',
+                    '-i', f'steps/%04d.png',
+                output_file])
+        except FileNotFoundError:
+            print("ffmpeg command failed - check your installation")
+        p.wait()
 
 def default_args():
     return _default_args
