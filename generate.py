@@ -813,7 +813,7 @@ def run(args):
                         # Save image
                         img = np.array(out.mul(255).clamp(0, 255)[0].cpu().detach().numpy().astype(np.uint8))[:,:,:]
                         img = np.transpose(img, (1, 2, 0))
-                        imageio.imwrite('./steps/' + str(j) + '.png', np.array(img))
+                        imageio.imwrite('./steps/' + str(j).zfill(4) + '.png', np.array(img))
 
                         # Time to start zooming?                    
                         if args.zoom_start <= i:
